@@ -1,0 +1,59 @@
+server:
+  port: 9000
+
+spring:
+  application:
+    name: campus-gateway
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+      routes:
+        - id: campus-user-auth-service
+          uri: lb://campus-user-auth-service
+          predicates:
+            - Path=/api/auth/**,/api/users/**
+          filters:
+            - StripPrefix=1
+        - id: campus-market-service
+          uri: lb://campus-market-service
+          predicates:
+            - Path=/api/market/**
+          filters:
+            - StripPrefix=1
+        - id: campus-task-service
+          uri: lb://campus-task-service
+          predicates:
+            - Path=/api/tasks/**
+          filters:
+            - StripPrefix=1
+        - id: campus-activity-service
+          uri: lb://campus-activity-service
+          predicates:
+            - Path=/api/activities/**,/api/clubs/**
+          filters:
+            - StripPrefix=1
+        - id: campus-notification-service
+          uri: lb://campus-notification-service
+          predicates:
+            - Path=/api/notifications/**
+          filters:
+            - StripPrefix=1
+
+campus:
+  security:
+    jwt-secret: campus-life-service-platform-jwt-secret-key-2026
+    white-list:
+      - /api/auth/login
+      - /api/auth/register
+      - /api/auth/captcha
+      - /actuator/**
+
+logging:
+  level:
+    org.springframework.cloud.gateway: info
+    com.god.gateway: debug

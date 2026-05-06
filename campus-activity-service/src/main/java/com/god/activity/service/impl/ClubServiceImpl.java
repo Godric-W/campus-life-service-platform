@@ -1,0 +1,129 @@
+package com.god.activity.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.god.activity.dto.CreateClubRequest;
+import com.god.activity.entity.Club;
+import com.god.activity.mapper.ClubMapper;
+import com.god.activity.service.ClubService;
+import com.god.activity.vo.ClubVO;
+import com.god.common.client.UserFeignClient;
+import com.god.common.context.UserContext;
+import com.god.common.dto.UserSimpleDTO;
+import com.god.common.exception.BusinessException;
+import com.god.common.result.ResultCode;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+public class ClubServiceImpl implements ClubService {
+
+    private final ClubMapper clubMapper;
+    private final UserFeignClient userFeignClient;
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Long createClub(CreateClubRequest request) {
+        Long userId = UserContext.getUserId();
+        if (userId == null) {
+            throw new BusinessException(ResultCode.UNAUTHORIZED);
+        }
+
+        Club club = new Club();
+        club.setName(request.getName());
+        club.setDescription(request.getDescription());
+        club.setLogo(request.getLogo());
+        club.setAdminId(userId);
+        club.setContactInfo(request.getContactInfo());
+        club.setCreateTime(LocalDateTime.now());
+        club.setUpdateTime(LocalDateTime.now());
+        clubMapper.insert(club);
+        return club.getId();
+    }
+
+    @Override
+    public List<ClubVO> getClubList() {
+        List<Club> clubs = clubMapper.selectList(new LambdaQueryWrapper<Club>()
+                .orderByDesc(Club::getCreateTime));
+        return clubs.stream().map(this::toVO).collect(Collectors.toList());
+    }
+
+    @Override
+    public ClubVO getClubDetail(Long id) {
+        Club club = getExistingClub(id);
+        return toVO(club);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateClub(Long id, CreateClubRequest request) {
+        Long userId = UserContext.getUserId();
+        if (userId == null) {
+            throw new BusinessException(ResultCode.UNAUTHORIZED);
+        }
+
+        Club existing = getExistingClub(id);
+        if (!existing.getAdminId().equals(userId)) {
+            throw new BusinessException(ResultCode.FORBIDDEN, "只有社团管理员可以修改社团信息");
+        }
+
+        Club club = new Club();
+        club.setId(id);
+        club.setName(request.getName());
+        club.setDescription(request.getDescription());
+        club.setLogo(request.getLogo());
+        club.setContactInfo(request.getContactInfo());
+        club.setUpdateTime(LocalDateTime.now());
+        clubMapper.updateById(club);
+    }
+
+    @Override
+    public List<ClubVO> getMyClubs() {
+        Long userId = UserContext.getUserId();
+        if (userId == null) {
+            throw new BusinessException(ResultCode.UNAUTHORIZED);
+        }
+
+        List<Club> clubs = clubMapper.selectList(new LambdaQueryWrapper<Club>()
+                .eq(Club::getAdminId, userId)
+                .orderByDesc(Club::getCreateTime));
+        return clubs.stream().map(this::toVO).collect(Collectors.toList());
+    }
+
+    private Club getExistingClub(Long id) {
+        Club club = clubMapper.selectById(id);
+        if (club == null) {
+            throw new BusinessException(ResultCode.NOT_FOUND, "社团不存在");
+        }
+        return club;
+    }
+
+    private ClubVO toVO(Club club) {
+        String adminName = getUserName(club.getAdminId());
+        return ClubVO.builder()
+                .id(club.getId())
+                .name(club.getName())
+                .description(club.getDescription())
+                .logo(club.getLogo())
+                .adminId(club.getAdminId())
+                .adminName(adminName)
+                .contactInfo(club.getContactInfo())
+                .createTime(club.getCreateTime())
+                .updateTime(club.getUpdateTime())
+                .build();
+    }
+
+    private String getUserName(Long userId) {
+        try {
+            UserSimpleDTO user = userFeignClient.getUserSimple(userId).getData();
+            return user != null ? user.getUsername() : "用户" + userId;
+        } catch (Exception e) {
+            return "用户" + userId;
+        }
+    }
+}

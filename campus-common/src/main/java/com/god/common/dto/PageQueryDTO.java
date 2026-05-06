@@ -1,0 +1,18 @@
+package com.god.common.dto;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import lombok.Data;
+
+import java.io.Serializable;
+
+@Data
+public class PageQueryDTO implements Serializable {
+
+    @Min(value = 1, message = "页码不能小于 1")
+    private Long pageNum = 1L;
+
+    @Min(value = 1, message = "每页条数不能小于 1")
+    @Max(value = 100, message = "每页条数不能超过 100")
+    private Long pageSize = 10L;
+}
