@@ -1,0 +1,20 @@
+CREATE DATABASE IF NOT EXISTS `campus_task` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+USE `campus_task`;
+
+CREATE TABLE help_task (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    publisher_id BIGINT NOT NULL COMMENT '发布者ID',
+    accepter_id BIGINT DEFAULT NULL COMMENT '接单者ID',
+    title VARCHAR(100) NOT NULL COMMENT '任务标题',
+    description TEXT COMMENT '任务描述',
+    task_type VARCHAR(50) NOT NULL COMMENT '任务类型',
+    reward DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT '悬赏金额',
+    pickup_address VARCHAR(255) DEFAULT NULL COMMENT '取货/开始地址',
+    delivery_address VARCHAR(255) DEFAULT NULL COMMENT '送达地址',
+    deadline DATETIME DEFAULT NULL COMMENT '截止时间',
+    contact_info VARCHAR(100) DEFAULT NULL COMMENT '联系方式',
+    status VARCHAR(32) NOT NULL DEFAULT 'PUBLISHED' COMMENT '任务状态',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

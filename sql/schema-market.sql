@@ -1,0 +1,19 @@
+CREATE DATABASE IF NOT EXISTS `campus_market` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+USE `campus_market`;
+
+CREATE TABLE market_item (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    seller_id BIGINT NOT NULL COMMENT '卖家ID',
+    title VARCHAR(100) NOT NULL COMMENT '标题',
+    description TEXT COMMENT '描述',
+    price DECIMAL(10,2) NOT NULL COMMENT '价格',
+    category VARCHAR(50) DEFAULT NULL COMMENT '分类',
+    cover_image VARCHAR(255) DEFAULT NULL COMMENT '封面图',
+    images TEXT COMMENT '图片，JSON或逗号分隔',
+    contact_info VARCHAR(100) DEFAULT NULL COMMENT '联系方式',
+    status VARCHAR(32) NOT NULL DEFAULT 'ON_SALE' COMMENT '状态',
+    view_count INT NOT NULL DEFAULT 0 COMMENT '浏览次数',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

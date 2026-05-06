@@ -1,0 +1,16 @@
+CREATE DATABASE IF NOT EXISTS `campus_notification` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+USE `campus_notification`;
+
+CREATE TABLE notification (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    receiver_id BIGINT NOT NULL COMMENT '接收人ID',
+    title VARCHAR(100) NOT NULL COMMENT '标题',
+    content VARCHAR(500) NOT NULL COMMENT '内容',
+    type VARCHAR(32) NOT NULL COMMENT '通知类型',
+    business_id BIGINT DEFAULT NULL COMMENT '业务ID',
+    business_type VARCHAR(32) DEFAULT NULL COMMENT '业务类型',
+    read_status TINYINT NOT NULL DEFAULT 0 COMMENT '是否已读：0未读，1已读',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

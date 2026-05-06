@@ -1,0 +1,42 @@
+CREATE DATABASE IF NOT EXISTS `campus_activity` CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+USE `campus_activity`;
+
+CREATE TABLE club (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL COMMENT '社团名称',
+    description TEXT COMMENT '社团介绍',
+    logo VARCHAR(255) DEFAULT NULL COMMENT '社团Logo',
+    admin_id BIGINT NOT NULL COMMENT '社团负责人ID',
+    contact_info VARCHAR(100) DEFAULT NULL COMMENT '联系方式',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE activity (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    club_id BIGINT DEFAULT NULL COMMENT '所属社团ID',
+    publisher_id BIGINT NOT NULL COMMENT '发布者ID',
+    title VARCHAR(100) NOT NULL COMMENT '活动标题',
+    description TEXT COMMENT '活动描述',
+    location VARCHAR(255) DEFAULT NULL COMMENT '活动地点',
+    cover_image VARCHAR(255) DEFAULT NULL COMMENT '封面图',
+    start_time DATETIME NOT NULL COMMENT '开始时间',
+    end_time DATETIME NOT NULL COMMENT '结束时间',
+    signup_deadline DATETIME DEFAULT NULL COMMENT '报名截止时间',
+    max_participants INT DEFAULT NULL COMMENT '最大报名人数',
+    current_participants INT NOT NULL DEFAULT 0 COMMENT '当前报名人数',
+    status VARCHAR(32) NOT NULL DEFAULT 'PUBLISHED' COMMENT '状态',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+CREATE TABLE activity_registration (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    activity_id BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    status VARCHAR(32) NOT NULL DEFAULT 'REGISTERED',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_activity_user (activity_id, user_id)
+);

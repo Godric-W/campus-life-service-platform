@@ -170,25 +170,27 @@ http://localhost:9000/api/tasks
 
 ## 4. 数据库说明
 
-项目采用一个数据库多张表的方式。
+项目采用**每个服务独立 Schema** 的方式，通过数据库隔离保证微服务数据私有。
 
-数据库名：
-
-```sql
-campus_life
-```
+| 服务 | Schema | 建表 SQL |
+|---|---|---|
+| campus-user-auth-service | `campus_user` | `sql/schema-user.sql` |
+| campus-market-service | `campus_market` | `sql/schema-market.sql` |
+| campus-task-service | `campus_task` | `sql/schema-task.sql` |
+| campus-activity-service | `campus_activity` | `sql/schema-activity.sql` |
+| campus-notification-service | `campus_notification` | `sql/schema-notification.sql` |
 
 已使用的数据表：
 
-| 表名 | 说明 |
-|---|---|
-| `sys_user` | 用户表 |
-| `market_item` | 二手商品表 |
-| `help_task` | 跑腿任务表 |
-| `club` | 社团表 |
-| `activity` | 活动表 |
-| `activity_registration` | 活动报名表 |
-| `notification` | 通知表 |
+| 表名 | 说明 | Schema |
+|---|---|---|
+| `sys_user` | 用户表 | `campus_user` |
+| `market_item` | 二手商品表 | `campus_market` |
+| `help_task` | 跑腿任务表 | `campus_task` |
+| `club` | 社团表 | `campus_activity` |
+| `activity` | 活动表 | `campus_activity` |
+| `activity_registration` | 活动报名表 | `campus_activity` |
+| `notification` | 通知表 | `campus_notification` |
 
 注意：各服务的 `application.yml` 默认数据库账号密码为：
 
@@ -466,9 +468,8 @@ Authorization: Bearer xxxxxx
 ### 10.1 启动基础服务
 
 1. 启动 MySQL。
-2. 确认已创建数据库：`campus_life`。
-3. 确认已创建所需数据表。
-4. 启动 Nacos，默认地址：`http://localhost:8848/nacos`。
+2. 执行 `sql/` 目录下所有 `schema-*.sql` 文件创建各服务独立数据库。
+3. 启动 Nacos，默认地址：`http://localhost:8848/nacos`。
 
 ### 10.2 修改数据库配置
 
@@ -477,7 +478,7 @@ Authorization: Bearer xxxxxx
 ```yaml
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/campus_life?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:3306/campus_market?useUnicode=true...
     username: root
     password: root
 ```
