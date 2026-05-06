@@ -6,6 +6,6 @@
 # Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
-/.idea/dataSources.xml
-/.idea/ApifoxUploaderProjectSetting.xml
-/.idea/.cache/
+/dataSources.xml
+/ApifoxUploaderProjectSetting.xml
+/.cache/
