@@ -46,7 +46,6 @@ spring:
 
 campus:
   security:
-    jwt-secret: campus-life-service-platform-jwt-secret-key-2026
     white-list:
       - /api/auth/login
       - /api/auth/register

@@ -1,0 +1,11 @@
+# 本地开发环境配置模板
+# 使用方法: 复制此文件为 application-local.yml，填入真实密码
+# cp application-local.yml.example application-local.yml
+
+spring:
+  datasource:
+    password: "your_db_password"
+
+campus:
+  security:
+    jwt-secret: your-jwt-secret-key

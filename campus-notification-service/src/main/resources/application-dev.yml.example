@@ -1,0 +1,7 @@
+# 开发环境配置模板
+# 使用方法: 复制此文件为 application-dev.yml，或通过环境变量注入敏感信息
+# cp application-dev.yml.example application-dev.yml
+
+spring:
+  datasource:
+    password: "${DB_PASSWORD:your_db_password}"
