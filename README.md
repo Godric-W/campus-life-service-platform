@@ -222,6 +222,7 @@ cp campus-user-auth-service/src/main/resources/application-local.yml.example \
 ## 6. 接口说明
 
 > 面向前端开发的完整接口文档（含字段定义、校验规则、状态流转）见 [`docs/product-prototype.md`](docs/product-prototype.md)。
+> 系统设计文档（架构、数据库、安全、设计决策）见 [`docs/design-doc.md`](docs/design-doc.md)。
 
 ### 6.1 用户认证服务接口
 
