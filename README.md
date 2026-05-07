@@ -4,7 +4,7 @@
 
 校园综合生活服务平台是一个基于 Spring Cloud Alibaba 的微服务课程项目，面向校园生活场景，提供用户认证、二手交易、跑腿互助、活动社团、消息通知等功能。
 
-项目采用一个数据库多张表的方式降低部署复杂度，各业务模块以独立微服务运行，通过网关统一入口访问，通过 Nacos 实现服务注册发现，通过 OpenFeign 完成必要的服务间调用。
+项目采用每个服务独立 Schema 的方式隔离数据，各业务模块以独立微服务运行，通过网关统一入口访问，通过 Nacos 实现服务注册发现，通过 OpenFeign 完成必要的服务间调用。
 
 ## 2. 技术栈
 
@@ -170,34 +170,41 @@ http://localhost:9000/api/tasks
 
 ## 4. 数据库说明
 
-项目采用一个数据库多张表的方式。
+项目采用**每个服务独立 Schema** 的方式，通过数据库隔离保证微服务数据私有。
 
-数据库名：
-
-```sql
-campus_life
-```
+| 服务 | Schema | 建表 SQL |
+|---|---|---|
+| campus-user-auth-service | `campus_user` | `sql/schema-user.sql` |
+| campus-market-service | `campus_market` | `sql/schema-market.sql` |
+| campus-task-service | `campus_task` | `sql/schema-task.sql` |
+| campus-activity-service | `campus_activity` | `sql/schema-activity.sql` |
+| campus-notification-service | `campus_notification` | `sql/schema-notification.sql` |
 
 已使用的数据表：
 
-| 表名 | 说明 |
-|---|---|
-| `sys_user` | 用户表 |
-| `market_item` | 二手商品表 |
-| `help_task` | 跑腿任务表 |
-| `club` | 社团表 |
-| `activity` | 活动表 |
-| `activity_registration` | 活动报名表 |
-| `notification` | 通知表 |
+| 表名 | 说明 | Schema |
+|---|---|---|
+| `sys_user` | 用户表 | `campus_user` |
+| `market_item` | 二手商品表 | `campus_market` |
+| `help_task` | 跑腿任务表 | `campus_task` |
+| `club` | 社团表 | `campus_activity` |
+| `activity` | 活动表 | `campus_activity` |
+| `activity_registration` | 活动报名表 | `campus_activity` |
+| `notification` | 通知表 | `campus_notification` |
 
-注意：各服务的 `application.yml` 默认数据库账号密码为：
+敏感配置（数据库密码、JWT 密钥）存放在 profile 文件中，不随 `application.yml` 提交：
 
-```yaml
-username: root
-password: "000000"
+- `application-local.yml` — 本地开发环境，直接写值，已 `.gitignore`
+- `application-dev.yml` — 部署环境，通过环境变量注入，已 `.gitignore`
+- `application-*.yml.example` — 模板文件，可安全提交到 Git
+
+使用方式：复制 `.example` 模板为对应 profile 文件，填入真实密码。例如：
+
+```bash
+cp campus-user-auth-service/src/main/resources/application-local.yml.example \
+   campus-user-auth-service/src/main/resources/application-local.yml
+# 编辑 application-local.yml，将 "your_db_password" 替换为实际密码
 ```
-
-如果本地 MySQL 密码不同，需要修改每个服务的配置文件。
 
 ## 5. 服务端口
 
@@ -213,6 +220,9 @@ password: "000000"
 | MySQL | 3306 | 数据库 |
 
 ## 6. 接口说明
+
+> 面向前端开发的完整接口文档（含字段定义、校验规则、状态流转）见 [`docs/product-prototype.md`](docs/product-prototype.md)。
+> 系统设计文档（架构、数据库、安全、设计决策）见 [`docs/design-doc.md`](docs/design-doc.md)。
 
 ### 6.1 用户认证服务接口
 
@@ -466,23 +476,24 @@ Authorization: Bearer xxxxxx
 ### 10.1 启动基础服务
 
 1. 启动 MySQL。
-2. 确认已创建数据库：`campus_life`。
-3. 确认已创建所需数据表。
-4. 启动 Nacos，默认地址：`http://localhost:8848/nacos`。
+2. 执行 `sql/` 目录下所有 `schema-*.sql` 文件创建各服务独立数据库。
+3. 启动 Nacos，默认地址：`http://localhost:8848/nacos`。
 
-### 10.2 修改数据库配置
+### 10.2 配置数据库密码
 
-检查各服务的 `application.yml`：
+每个服务需要 `application-local.yml`（本地开发）或 `application-dev.yml`（部署环境）来提供数据库密码和 JWT 密钥。
 
-```yaml
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/campus_life?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-    username: root
-    password: root
+首次使用请从模板复制：
+
+```bash
+for module in campus-user-auth-service campus-market-service campus-task-service \
+              campus-activity-service campus-notification-service campus-gateway; do
+  cp "$module/src/main/resources/application-local.yml.example" \
+     "$module/src/main/resources/application-local.yml"
+done
 ```
 
-如果本地数据库账号密码不同，请修改。
+然后修改各 `application-local.yml` 中的 `your_db_password` 为实际密码，`your-jwt-secret-key` 为实际密钥。
 
 ### 10.3 编译项目
 

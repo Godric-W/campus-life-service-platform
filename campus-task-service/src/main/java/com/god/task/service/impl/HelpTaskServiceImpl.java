@@ -22,7 +22,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -84,8 +88,14 @@ public class HelpTaskServiceImpl implements HelpTaskService {
         wrapper.orderByDesc(HelpTask::getCreateTime);
         Page<HelpTask> result = helpTaskMapper.selectPage(page, wrapper);
 
+        // 批量查询用户名：收集当前页所有 publisherId，一次远程调用拿到全部用户名，避免 N+1
+        Set<Long> publisherIds = result.getRecords().stream()
+                .map(HelpTask::getPublisherId)
+                .collect(Collectors.toSet());
+        Map<Long, String> userNameMap = batchGetUserNames(publisherIds);
+
         List<HelpTaskListVO> voList = result.getRecords().stream()
-                .map(this::toListVO)
+                .map(task -> toListVO(task, userNameMap.get(task.getPublisherId())))
                 .collect(Collectors.toList());
 
         return PageResult.of(result.getTotal(), (long) queryDTO.getPageNum(), (long) queryDTO.getPageSize(), voList);
@@ -223,13 +233,11 @@ public class HelpTaskServiceImpl implements HelpTaskService {
                 .build();
     }
 
-    private HelpTaskListVO toListVO(HelpTask task) {
-        String publisherName = getUserName(task.getPublisherId());
-        
+    private HelpTaskListVO toListVO(HelpTask task, String publisherName) {
         return HelpTaskListVO.builder()
                 .id(task.getId())
                 .publisherId(task.getPublisherId())
-                .publisherName(publisherName)
+                .publisherName(publisherName != null ? publisherName : "用户" + task.getPublisherId())
                 .title(task.getTitle())
                 .taskType(task.getTaskType())
                 .reward(task.getReward())
@@ -241,6 +249,24 @@ public class HelpTaskServiceImpl implements HelpTaskService {
                 .build();
     }
 
+    // 批量获取用户名，一次远程调用查询所有用户，失败时返回空Map，调用方降级展示"用户{id}"
+    private Map<Long, String> batchGetUserNames(Collection<Long> userIds) {
+        if (userIds.isEmpty()) {
+            return Map.of();
+        }
+        try {
+            Map<Long, UserSimpleDTO> userMap = userFeignClient.batchGetUserSimple(new ArrayList<>(userIds)).getData();
+            if (userMap == null) {
+                return Map.of();
+            }
+            return userMap.entrySet().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getUsername()));
+        } catch (Exception e) {
+            return Map.of();
+        }
+    }
+
+    // 任务详情用，只查一两个用户，无需批量
     private String getUserName(Long userId) {
         try {
             UserSimpleDTO user = userFeignClient.getUserSimple(userId).getData();

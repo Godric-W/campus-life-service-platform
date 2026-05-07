@@ -4,10 +4,9 @@ server:
 spring:
   application:
     name: campus-gateway
+  profiles:
+    active: local
   cloud:
-    nacos:
-      discovery:
-        server-addr: localhost:8848
     gateway:
       discovery:
         locator:
@@ -46,7 +45,6 @@ spring:
 
 campus:
   security:
-    jwt-secret: campus-life-service-platform-jwt-secret-key-2026
     white-list:
       - /api/auth/login
       - /api/auth/register

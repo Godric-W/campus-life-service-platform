@@ -23,7 +23,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -81,9 +85,15 @@ public class MarketItemServiceImpl implements MarketItemService {
         
         wrapper.orderByDesc(MarketItem::getCreateTime);
         Page<MarketItem> result = marketItemMapper.selectPage(page, wrapper);
-        
+
+        // 批量查询用户名：收集当前页所有 sellerId，一次远程调用拿到全部用户名，避免 N+1
+        Set<Long> sellerIds = result.getRecords().stream()
+                .map(MarketItem::getSellerId)
+                .collect(Collectors.toSet());
+        Map<Long, String> userNameMap = batchGetUserNames(sellerIds);
+
         List<MarketItemListVO> voList = result.getRecords().stream()
-                .map(this::toListVO)
+                .map(item -> toListVO(item, userNameMap.get(item.getSellerId())))
                 .collect(Collectors.toList());
         
         return PageResult.of(result.getTotal(), (long) queryDTO.getPageNum(), (long) queryDTO.getPageSize(), voList);
@@ -220,12 +230,11 @@ public class MarketItemServiceImpl implements MarketItemService {
                 .build();
     }
 
-    private MarketItemListVO toListVO(MarketItem item) {
-        String sellerName = getUserName(item.getSellerId());
+    private MarketItemListVO toListVO(MarketItem item, String sellerName) {
         return MarketItemListVO.builder()
                 .id(item.getId())
                 .sellerId(item.getSellerId())
-                .sellerName(sellerName)
+                .sellerName(sellerName != null ? sellerName : "用户" + item.getSellerId())
                 .title(item.getTitle())
                 .price(item.getPrice())
                 .category(item.getCategory())
@@ -236,6 +245,24 @@ public class MarketItemServiceImpl implements MarketItemService {
                 .build();
     }
 
+    // 批量获取用户名，一次远程调用查询所有用户，失败时返回空Map，调用方降级展示"用户{id}"
+    private Map<Long, String> batchGetUserNames(Collection<Long> userIds) {
+        if (userIds.isEmpty()) {
+            return Map.of();
+        }
+        try {
+            Map<Long, UserSimpleDTO> userMap = userFeignClient.batchGetUserSimple(new ArrayList<>(userIds)).getData();
+            if (userMap == null) {
+                return Map.of();
+            }
+            return userMap.entrySet().stream()
+                    .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getUsername()));
+        } catch (Exception e) {
+            return Map.of();
+        }
+    }
+
+    // 单品详情用，只查一个用户，无需批量
     private String getUserName(Long userId) {
         try {
             UserSimpleDTO user = userFeignClient.getUserSimple(userId).getData();
