@@ -44,6 +44,7 @@ campus-life-service-platform
 ├── campus-task-service
 ├── campus-activity-service
 ├── campus-notification-service
+├── campus-file-service
 └── pom.xml
 ```
 
@@ -168,6 +169,19 @@ http://localhost:9000/api/tasks
 
 当前版本未引入消息队列，通知创建接口可由前端或其他服务同步调用。后续可扩展为 RabbitMQ 异步通知。
 
+### 3.8 campus-file-service
+
+文件上传服务，端口：`9060`。
+
+职责：
+
+- 接收前端上传的图片文件
+- 上传至阿里云 OSS
+- 返回可访问的 OSS URL
+- 支持单张和批量上传
+
+该服务无数据库依赖，文件按日期分目录存储在 OSS，访问 URL 由前端获取后再填入其他业务接口的 image 字段。
+
 ## 4. 数据库说明
 
 项目采用**每个服务独立 Schema** 的方式，通过数据库隔离保证微服务数据私有。
@@ -216,6 +230,7 @@ cp campus-user-auth-service/src/main/resources/application-local.yml.example \
 | `campus-task-service` | 9030 | 跑腿任务服务 |
 | `campus-activity-service` | 9040 | 活动社团服务 |
 | `campus-notification-service` | 9050 | 消息通知服务 |
+| `campus-file-service` | 9060 | 文件上传服务 |
 | Nacos | 8848 | 服务注册发现 |
 | MySQL | 3306 | 数据库 |
 
@@ -462,6 +477,7 @@ POST /users/simple/batch
 | 跑腿任务服务 | `http://localhost:9030/doc.html` |
 | 活动社团服务 | `http://localhost:9040/doc.html` |
 | 消息通知服务 | `http://localhost:9050/doc.html` |
+| 文件上传服务 | `http://localhost:9060/doc.html` |
 
 在 Knife4j 中测试需要登录的接口时，需要配置请求头：
 
@@ -512,7 +528,8 @@ mvn clean compile -DskipTests
 3. `campus-task-service`
 4. `campus-activity-service`
 5. `campus-notification-service`
-6. `campus-gateway`
+6. `campus-file-service`
+7. `campus-gateway`
 
 启动完成后，可在 Nacos 控制台查看服务是否注册成功。
 
@@ -525,6 +542,7 @@ campus-market-service
 campus-task-service
 campus-activity-service
 campus-notification-service
+campus-file-service
 ```
 
 ## 11. 推荐测试流程
@@ -639,11 +657,10 @@ GET http://localhost:9000/api/notifications/unread-count
 1. 接入 RabbitMQ，实现异步消息通知。
 2. 接入 Redis，实现 Token 黑名单、热点商品缓存、验证码。
 3. 接入 Nacos Config，实现统一配置中心。
-4. 增加文件上传服务，实现商品图片、社团 Logo、活动封面上传。
-5. 增加管理员后台接口。
-6. 增加数据统计接口，例如商品数量、任务完成率、活动报名人数。
-7. 增加接口权限控制，例如管理员、社团管理员、普通学生区分。
-8. 增加单元测试和接口测试集合。
+4. 增加管理员后台接口。
+5. 增加数据统计接口，例如商品数量、任务完成率、活动报名人数。
+6. 增加接口权限控制，例如管理员、社团管理员、普通学生区分。
+7. 增加单元测试和接口测试集合。
 
 ## 13. 当前项目状态
 
@@ -659,3 +676,4 @@ GET http://localhost:9000/api/notifications/unread-count
 - Nacos 服务注册发现
 - Knife4j 接口文档
 - MySQL 数据持久化
+- 文件上传服务，实现商品图片、社团 Logo、活动封面上传。

@@ -99,6 +99,7 @@
 | 跑腿任务 | `campus-task-service` | 9030 | `campus_task` |
 | 社团活动 | `campus-activity-service` | 9040 | `campus_activity` |
 | 消息通知 | `campus-notification-service` | 9050 | `campus_notification` |
+| 文件上传 | `campus-file-service` | 9060 | —（无数据库） |
 
 ---
 
@@ -347,6 +348,35 @@ com.god.userauth
 - `PUT /notifications/{id}/read` — 标记单条已读
 - `PUT /notifications/read-all` — 全部已读
 - `DELETE /notifications/{id}` — 删除通知
+
+### 3.8 campus-file-service（文件上传服务）
+
+**职责：** 接收前端上传的图片，上传至阿里云 OSS，返回可访问的 URL。
+
+**包结构：**
+
+```
+com.god.file
+├── controller/
+│   └── FileController.java    # /files — 单张上传、批量上传
+├── service/
+│   ├── FileService.java
+│   └── impl/
+│       └── FileServiceImpl.java
+└── config/
+    └── OssProperties.java      # OSS 配置属性
+```
+
+**核心接口：**
+- `POST /files/upload/image` — 上传单张图片（需登录，限制 5MB，jpg/png/webp/gif）
+- `POST /files/upload/batch` — 批量上传（需登录，最多 9 张）
+
+**设计要点：**
+- 无数据库依赖，纯粹的文件上传中转服务
+- 文件按日期分目录存储：`images/yyyy/MM/dd/{uuid}.ext`
+- 文件名使用 UUID 防冲突
+- 支持通过 `oss.aliyun.base-url` 配置 CDN 域名
+- 不自动关联任何业务实体，URL 由前端填入业务接口
 
 ---
 
@@ -788,6 +818,7 @@ application-*.yml.example  → 模板文件（提交 Git）
 | datasource url/driver/username | — | ✅ | ✅ |
 | datasource password | — | ✅（明文） | ✅（`${DB_PASSWORD}`） |
 | jwt-secret | — | ✅（明文） | ✅（`${JWT_SECRET}`） |
+| oss endpoint/accessKey/bucket | — | ✅（明文） | ✅（`${OSS_*}`） |
 
 ---
 
@@ -803,7 +834,8 @@ application-*.yml.example  → 模板文件（提交 Git）
    campus-task-service :9030
    campus-activity-service :9040
    campus-notification-service :9050
-   （以上 4 个可并行启动）
+   campus-file-service :9060
+   （以上 5 个可并行启动）
 5. campus-gateway :9000  ← 最后启动
 ```
 
@@ -812,6 +844,7 @@ application-*.yml.example  → 模板文件（提交 Git）
 | 组件 | 地址 | 说明 |
 |---|---|---|
 | MySQL | `localhost:3306` | 5 个独立 Schema |
+| OSS | 阿里云 OSS | 图片存储（需配置 AccessKey） |
 | Nacos | `localhost:8848` | 服务注册与发现 |
 
 ### 9.3 本地开发环境搭建
@@ -824,7 +857,8 @@ done
 
 # 2. 配置密码（首次）
 for module in campus-user-auth-service campus-market-service campus-task-service \
-              campus-activity-service campus-notification-service campus-gateway; do
+              campus-activity-service campus-notification-service campus-gateway \
+              campus-file-service; do
   cp "$module/src/main/resources/application-local.yml.example" \
      "$module/src/main/resources/application-local.yml"
 done

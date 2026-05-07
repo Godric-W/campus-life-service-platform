@@ -1,0 +1,25 @@
+server:
+  port: 9060
+
+spring:
+  application:
+    name: campus-file-service
+  profiles:
+    active: local
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 50MB
+
+knife4j:
+  enable: true
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+
+logging:
+  level:
+    com.god.file: debug

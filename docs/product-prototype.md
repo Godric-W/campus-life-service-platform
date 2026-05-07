@@ -847,7 +847,71 @@ Authorization: Bearer <token>
 
 ---
 
-## 8. 页面结构建议
+## 8. 文件上传模块
+
+**服务端口：** 9060  
+**网关路径前缀：** `/api/files/**`
+
+### 8.1 文件校验规则
+
+| 规则 | 说明 |
+|---|---|
+| 允许格式 | jpg / jpeg / png / webp / gif |
+| 单文件上限 | 5MB |
+| 批量上限 | 9 张 |
+| 认证 | 需登录 |
+
+### 8.2 接口清单
+
+#### POST /api/files/upload/image — 上传单张图片
+
+```
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| file | File | ✅ | 图片文件 |
+
+**响应：** `Result<String>`（OSS 访问 URL）
+
+**调用示例：**
+```js
+const form = new FormData();
+form.append('file', imageFile);
+const { data } = await axios.post('/api/files/upload/image', form);
+// data.data → "https://bucket.oss-cn-hangzhou.aliyuncs.com/images/2026/05/07/xxx.jpg"
+```
+
+#### POST /api/files/upload/batch — 批量上传图片
+
+```
+Authorization: Bearer <token>
+Content-Type: multipart/form-data
+```
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| files | File[] | ✅ | 图片文件数组，最多 9 张 |
+
+**响应：** `Result<List<String>>`
+
+### 8.3 前端使用流程
+
+```
+1. 用户选择图片
+2. POST /api/files/upload/image → 拿到 OSS URL
+3. 将 URL 填入业务请求的 image 字段
+   例如：{ ...item, coverImage: "https://..." }
+4. POST /api/market/items → 商品发布成功
+```
+
+注意：文件服务只负责上传并返回 URL，不会自动关联到任何业务实体。前端需要拿到 URL 后再调用相应的业务接口。
+
+---
+
+## 9. 页面结构建议
 
 ```
 ├── 登录/注册
@@ -891,7 +955,7 @@ Authorization: Bearer <token>
 
 ---
 
-## 9. 交互状态说明
+## 10. 交互状态说明
 
 ### 9.1 商品状态流转
 
@@ -918,13 +982,13 @@ Authorization: Bearer <token>
 
 ---
 
-## 10. 前端开发要点
+## 11. 前端开发要点
 
 1. **Token 管理**：登录成功后存储 token，每次请求在 Header 带上 `Authorization: Bearer <token>`
 2. **用户上下文**：token 含 userId/username/role，解析后全局可用
 3. **列表加载**：所有分页列表加 `pageNum`/`pageSize`，支持下拉刷新和上拉加载
 4. **错误处理**：401 跳转登录页，403 提示"无权限"，409 提示对应冲突信息
 5. **列表中的用户名**：服务端通过 Feign 已填充 `sellerName`/`publisherName` 等，前端直接展示即可
-6. **图片上传**：目前接口没有图片上传端点，`coverImage`/`images` 字段接受 URL 字符串
+6. **图片上传**：调用 `/api/files/upload/image` 上传图片 → 获得 OSS URL → 填入业务接口的 image 字段。不支持直接在业务接口中传文件。
 7. **消息通知**：建议在页面顶部或 Tab 上显示未读数量角标
 8. **活动报名**：列表的 `currentParticipants` 和 `maxParticipants` 用来展示报名进度条

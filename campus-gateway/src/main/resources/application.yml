@@ -42,6 +42,12 @@ spring:
             - Path=/api/notifications/**
           filters:
             - StripPrefix=1
+        - id: campus-file-service
+          uri: lb://campus-file-service
+          predicates:
+            - Path=/api/files/**
+          filters:
+            - StripPrefix=1
 
 campus:
   security:

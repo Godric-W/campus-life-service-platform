@@ -17,6 +17,7 @@
         <module>campus-task-service</module>
         <module>campus-activity-service</module>
         <module>campus-notification-service</module>
+        <module>campus-file-service</module>
     </modules>
 
     <properties>
