@@ -4,10 +4,9 @@ server:
 spring:
   application:
     name: campus-gateway
+  profiles:
+    active: local
   cloud:
-    nacos:
-      discovery:
-        server-addr: localhost:8848
     gateway:
       discovery:
         locator:

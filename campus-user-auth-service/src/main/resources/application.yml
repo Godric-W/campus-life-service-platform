@@ -4,14 +4,9 @@ server:
 spring:
   application:
     name: campus-user-auth-service
-  cloud:
-    nacos:
-      discovery:
-        server-addr: localhost:8848
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/campus_user?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
-    username: root
+  profiles:
+    active: local
+
 
 mybatis-plus:
   configuration:

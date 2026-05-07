@@ -1,6 +1,11 @@
 # 开发环境配置模板
 # 使用方法: 复制此文件为 application-dev.yml，或通过环境变量注入敏感信息
 # cp application-dev.yml.example application-dev.yml
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: "${NACOS_ADDR:localhost:8848}"
 
 campus:
   security:
