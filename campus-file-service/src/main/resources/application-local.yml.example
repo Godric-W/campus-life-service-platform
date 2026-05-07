@@ -1,0 +1,15 @@
+# 本地开发环境配置模板
+# 使用方法: 复制此文件为 application-local.yml，填入真实的 OSS 凭证
+# cp application-local.yml.example application-local.yml
+spring:
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+
+oss:
+  aliyun:
+    endpoint: oss-cn-hangzhou.aliyuncs.com
+    access-key-id: your-access-key-id
+    access-key-secret: your-access-key-secret
+    bucket-name: your-bucket-name
