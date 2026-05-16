@@ -24,14 +24,14 @@
 
 | 分类 | 技术 | 版本 | 说明 |
 |------|------|------|------|
-| 框架 | Vue | 3.4.x | 渐进式JavaScript框架 |
-| 语言 | TypeScript | 5.4.x | 类型安全的JavaScript超集 |
-| 构建工具 | Vite | 6.5.x | 下一代前端构建工具 |
-| 状态管理 | Pinia | 2.1.x | Vue官方状态管理库 |
-| UI组件库 | Element Plus | 2.6.x | Vue 3组件库 |
-| 路由 | Vue Router | 4.3.x | Vue官方路由管理器 |
-| HTTP客户端 | Axios | 1.6.x | Promise-based HTTP客户端 |
-| 样式 | SCSS | - | CSS预处理器 |
+| 框架 | Vue | 3.4 | 渐进式JavaScript框架 |
+| 语言 | TypeScript | 5.3 | 类型安全的JavaScript超集 |
+| 构建工具 | Vite | 5 | 下一代前端构建工具 |
+| 状态管理 | Pinia | 2.1 | Vue官方状态管理库 |
+| UI组件库 | Element Plus | 2.6 | Vue 3组件库 |
+| 路由 | Vue Router | 4.3 | Vue官方路由管理器 |
+| HTTP客户端 | Axios | 1.6 | Promise-based HTTP客户端 |
+| 样式 | SCSS | 1.70 | CSS预处理器 |
 
 ### 2.2 技术选型理由
 
@@ -459,7 +459,7 @@ VITE_APP_NAME=校园生活服务平台
 
 ```bash
 # 初始化项目
-npm create vite@6.5.0 . -- --template vue-ts
+npm create vite@5 . -- --template vue-ts
 
 # 安装依赖
 npm install
@@ -572,7 +572,7 @@ npm run preview
 
 ```typescript
 interface ApiResponse<T = any> {
-  code: number;        // 状态码，0表示成功
+  code: number;        // 状态码，200 表示成功
   message: string;     // 提示信息
   data: T;             // 数据
 }

@@ -27,6 +27,19 @@
 | Hutool | 常用工具类 |
 | JWT | 用户登录认证 |
 
+### 前端技术
+
+| 技术 | 版本/说明 |
+|---|---|
+| Vue | 3.4，渐进式 JavaScript 框架 |
+| TypeScript | 5.3，类型安全 |
+| Vite | 5，构建工具 |
+| Pinia | 2.1，状态管理 |
+| Element Plus | 2.6，UI 组件库 |
+| Vue Router | 4.3，路由管理 |
+| Axios | 1.6，HTTP 客户端 |
+| SCSS | 1.70，CSS 预处理 |
+
 后续可扩展：
 
 - Redis：Token 黑名单、验证码、热点数据缓存。
@@ -45,6 +58,7 @@ campus-life-service-platform
 ├── campus-activity-service
 ├── campus-notification-service
 ├── campus-file-service
+├── frontend               # Vue 3 前端项目
 └── pom.xml
 ```
 
@@ -238,6 +252,8 @@ cp campus-user-auth-service/src/main/resources/application-local.yml.example \
 
 > 面向前端开发的完整接口文档（含字段定义、校验规则、状态流转）见 [`docs/product-prototype.md`](docs/product-prototype.md)。
 > 系统设计文档（架构、数据库、安全、设计决策）见 [`docs/design-doc.md`](docs/design-doc.md)。
+> 前端技术设计文档见 [`docs/frontend-tech-doc.md`](docs/frontend-tech-doc.md)。
+> 前后端联调测试流程见 [`docs/integration-test-guide.md`](docs/integration-test-guide.md)。
 
 ### 6.1 用户认证服务接口
 
@@ -545,7 +561,19 @@ campus-notification-service
 campus-file-service
 ```
 
+### 10.5 启动前端
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+前端开发服务器运行在 `http://localhost:5173`，通过 Vite proxy 将 `/api` 请求转发到网关 `http://localhost:9000`，无需额外配置跨域。
+
 ## 11. 推荐测试流程
+
+> 以下是基于 curl 的快速 API 测试。完整的**前后端 UI 联调测试流程**（含多用户场景、异常验证、排查指南）见 [`docs/integration-test-guide.md`](docs/integration-test-guide.md)。
 
 ### 11.1 注册用户
 
@@ -676,4 +704,5 @@ GET http://localhost:9000/api/notifications/unread-count
 - Nacos 服务注册发现
 - Knife4j 接口文档
 - MySQL 数据持久化
-- 文件上传服务，实现商品图片、社团 Logo、活动封面上传。
+- 文件上传服务，实现商品图片、社团 Logo、活动封面上传
+- Vue 3 前端界面，覆盖所有业务模块的页面和交互。
