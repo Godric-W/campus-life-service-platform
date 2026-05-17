@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import { OfficeBuilding, Bell, ArrowDown, HomeFilled, ShoppingCart, Tickets, Calendar, ChatDotRound } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
 import { useNotificationStore } from '@/stores/notification'
@@ -72,9 +72,21 @@ const menuItems = [
   { path: '/notifications', label: '通知', icon: ChatDotRound }
 ]
 
+let unreadPollTimer: ReturnType<typeof setInterval> | null = null
+
 onMounted(async () => {
   await userStore.fetchUserInfo()
   await notificationStore.fetchUnreadCount()
+  unreadPollTimer = setInterval(() => {
+    notificationStore.fetchUnreadCount()
+  }, 15000)
+})
+
+onUnmounted(() => {
+  if (unreadPollTimer) {
+    clearInterval(unreadPollTimer)
+    unreadPollTimer = null
+  }
 })
 
 async function handleLogout() {

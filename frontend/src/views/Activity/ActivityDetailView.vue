@@ -75,7 +75,7 @@
           报名参加
         </el-button>
         <el-button 
-          v-if="hasRegistered" 
+          v-if="activity.isRegistered" 
           type="warning" 
           @click="handleCancelRegistration"
           :loading="loading"
@@ -90,7 +90,7 @@
         >
           取消活动
         </el-button>
-        <el-button v-if="!canRegister && !hasRegistered && !canCancelActivity" type="text" @click="$router.back()">
+        <el-button v-if="!canRegister && !activity.isRegistered && !canCancelActivity" type="text" @click="$router.back()">
           返回
         </el-button>
       </div>
@@ -111,11 +111,10 @@ const route = useRoute()
 const userStore = useUserStore()
 const activity = ref<Activity | null>(null)
 const loading = ref(false)
-const hasRegistered = ref(false)
 
 const canRegister = computed(() => {
   if (!activity.value) return false
-  return activity.value.status === 'PUBLISHED' && !hasRegistered.value && activity.value.currentParticipants < activity.value.maxParticipants
+  return activity.value.status === 'PUBLISHED' && !activity.value.isRegistered && activity.value.currentParticipants < activity.value.maxParticipants
 })
 
 const canCancelActivity = computed(() => {
@@ -163,25 +162,13 @@ async function loadActivity() {
   activity.value = response.data
 }
 
-async function checkRegistration() {
-  // 检查用户是否已报名
-  if (!activity.value) return
-  try {
-    const response = await activityApi.getMyRegisteredActivities({ pageNum: 1, pageSize: 100 })
-    hasRegistered.value = response.data.records.some(a => a.id === activity.value?.id)
-  } catch {
-    hasRegistered.value = false
-  }
-}
-
 async function handleRegister() {
   if (!activity.value) return
   loading.value = true
   try {
     await activityApi.registerActivity(activity.value.id)
     ElMessage.success('报名成功')
-    hasRegistered.value = true
-    activity.value.currentParticipants++
+    await loadActivity()
   } catch {
     ElMessage.error('报名失败')
   } finally {
@@ -195,8 +182,7 @@ async function handleCancelRegistration() {
   try {
     await activityApi.cancelRegistration(activity.value.id)
     ElMessage.success('已取消报名')
-    hasRegistered.value = false
-    activity.value.currentParticipants--
+    await loadActivity()
   } catch {
     ElMessage.error('操作失败')
   } finally {
@@ -220,7 +206,6 @@ async function handleCancelActivity() {
 
 onMounted(async () => {
   await loadActivity()
-  await checkRegistration()
 })
 </script>
 

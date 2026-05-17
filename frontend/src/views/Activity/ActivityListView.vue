@@ -62,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onActivated } from 'vue'
 import { Search, Location, Clock } from '@element-plus/icons-vue'
 import { activityApi } from '@/api'
 import type { Activity } from '@/types'
@@ -122,6 +122,7 @@ function formatDate(dateStr: string) {
 }
 
 onMounted(loadActivities)
+onActivated(loadActivities)
 </script>
 
 <style scoped>

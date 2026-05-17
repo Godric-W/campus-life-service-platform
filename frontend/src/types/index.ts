@@ -141,6 +141,7 @@ export interface Activity {
   status: string
   publisherId: number
   publisherName: string
+  isRegistered: boolean
   createTime: string
   updateTime: string
 }
