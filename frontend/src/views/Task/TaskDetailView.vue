@@ -52,14 +52,14 @@
               <p class="role">发布者</p>
             </div>
           </div>
-          <div class="user-card" v-if="task.acceptorId">
+          <div class="user-card" v-if="task.accepterId">
             <div class="user-avatar">
               <el-avatar :size="50">
-                {{ task.acceptorName?.charAt(0) }}
+                {{ task.accepterName?.charAt(0) }}
               </el-avatar>
             </div>
             <div class="user-info">
-              <p class="name">{{ task.acceptorName }}</p>
+              <p class="name">{{ task.accepterName }}</p>
               <p class="role">接单者</p>
             </div>
           </div>
@@ -113,23 +113,23 @@ const task = ref<HelpTask | null>(null)
 const loading = ref(false)
 
 const canAccept = computed(() => {
-  if (!task.value || !userStore.userInfo) return false
-  return task.value.status === 'PENDING' && task.value.publisherId !== userStore.userInfo.userId
+  if (!task.value || !userStore.userInfo?.userId) return false
+  return task.value.status === 'PUBLISHED' && Number(task.value.publisherId) !== Number(userStore.userInfo.userId)
 })
 
 const canComplete = computed(() => {
-  if (!task.value || !userStore.userInfo) return false
-  return task.value.status === 'ACCEPTED' && task.value.acceptorId === userStore.userInfo.userId
+  if (!task.value || !userStore.userInfo?.userId) return false
+  return task.value.status === 'ACCEPTED' && Number(task.value.accepterId) === Number(userStore.userInfo.userId)
 })
 
 const canCancel = computed(() => {
-  if (!task.value || !userStore.userInfo) return false
-  return task.value.status === 'PENDING' && task.value.publisherId === userStore.userInfo.userId
+  if (!task.value || !userStore.userInfo?.userId) return false
+  return task.value.status === 'PUBLISHED' && Number(task.value.publisherId) === Number(userStore.userInfo.userId)
 })
 
 function getStatusClass(status: string) {
   switch (status) {
-    case 'PENDING': return 'status-pending'
+    case 'PUBLISHED': return 'status-pending'
     case 'ACCEPTED': return 'status-accepted'
     case 'COMPLETED': return 'status-completed'
     case 'CANCELLED': return 'status-cancelled'
@@ -139,7 +139,7 @@ function getStatusClass(status: string) {
 
 function getStatusText(status: string) {
   switch (status) {
-    case 'PENDING': return '待接单'
+    case 'PUBLISHED': return '待接单'
     case 'ACCEPTED': return '进行中'
     case 'COMPLETED': return '已完成'
     case 'CANCELLED': return '已取消'
@@ -166,8 +166,8 @@ async function handleAccept() {
     await taskApi.acceptTask(task.value.id)
     ElMessage.success('接单成功')
     task.value.status = 'ACCEPTED'
-    task.value.acceptorId = userStore.userInfo?.userId
-    task.value.acceptorName = userStore.userInfo?.username
+    task.value.accepterId = userStore.userInfo?.userId
+    task.value.accepterName = userStore.userInfo?.username
   } catch {
     ElMessage.error('接单失败')
   } finally {

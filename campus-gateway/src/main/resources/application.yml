@@ -10,7 +10,7 @@ spring:
     gateway:
       discovery:
         locator:
-          enabled: false
+          enabled: true
       routes:
         - id: campus-user-auth-service
           uri: lb://campus-user-auth-service

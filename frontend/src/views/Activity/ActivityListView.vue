@@ -15,9 +15,8 @@
       </el-input>
       <el-radio-group v-model="status" @change="handleSearch">
         <el-radio :value="'ALL'">全部</el-radio>
-        <el-radio :value="'PENDING'">未开始</el-radio>
-        <el-radio :value="'ONGOING'">进行中</el-radio>
-        <el-radio :value="'ENDED'">已结束</el-radio>
+        <el-radio :value="'PUBLISHED'">未开始</el-radio>
+        <el-radio :value="'FINISHED'">已结束</el-radio>
       </el-radio-group>
     </div>
 
@@ -43,7 +42,7 @@
             </span>
           </div>
           <div class="activity-footer">
-            <span class="participants">{{ activity.participantCount }}/{{ activity.maxParticipants }} 人报名</span>
+            <span class="participants">{{ activity.currentParticipants }}/{{ activity.maxParticipants }} 人报名</span>
             <span class="publisher">{{ activity.publisherName }}</span>
           </div>
         </div>
@@ -100,9 +99,8 @@ function handlePageChange(page: number) {
 
 function getStatusClass(status: string) {
   switch (status) {
-    case 'PENDING': return 'status-pending'
-    case 'ONGOING': return 'status-ongoing'
-    case 'ENDED': return 'status-ended'
+    case 'PUBLISHED': return 'status-pending'
+    case 'FINISHED': return 'status-ended'
     case 'CANCELLED': return 'status-cancelled'
     default: return ''
   }
@@ -110,9 +108,8 @@ function getStatusClass(status: string) {
 
 function getStatusText(status: string) {
   switch (status) {
-    case 'PENDING': return '未开始'
-    case 'ONGOING': return '进行中'
-    case 'ENDED': return '已结束'
+    case 'PUBLISHED': return '未开始'
+    case 'FINISHED': return '已结束'
     case 'CANCELLED': return '已取消'
     default: return status
   }

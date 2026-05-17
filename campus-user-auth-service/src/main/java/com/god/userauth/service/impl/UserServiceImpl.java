@@ -154,7 +154,7 @@ public class UserServiceImpl implements UserService {
 
     private UserProfileVO toProfile(User user) {
         return UserProfileVO.builder()
-                .id(user.getId())
+                .userId(user.getId())
                 .studentNo(user.getStudentNo())
                 .username(user.getUsername())
                 .phone(user.getPhone())

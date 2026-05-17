@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class UserProfileVO implements Serializable {
 
-    private Long id;
+    private Long userId;
     private String studentNo;
     private String username;
     private String phone;

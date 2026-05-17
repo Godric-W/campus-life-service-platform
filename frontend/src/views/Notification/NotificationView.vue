@@ -20,7 +20,7 @@
         v-for="notification in notificationStore.notifications" 
         :key="notification.id"
         class="notification-item"
-        :class="{ unread: !notification.read }"
+        :class="{ unread: notification.readStatus === 0 }"
         @click="handleMarkRead(notification.id)"
       >
         <div class="notification-icon" :class="getTypeClass(notification.type)">
@@ -29,7 +29,7 @@
         <div class="notification-content">
           <div class="notification-header">
             <h3>{{ notification.title }}</h3>
-            <span class="time">{{ formatTime(notification.createdAt) }}</span>
+            <span class="time">{{ formatTime(notification.createTime) }}</span>
           </div>
           <p>{{ notification.content }}</p>
           <span class="type-label">{{ getTypeText(notification.type) }}</span>

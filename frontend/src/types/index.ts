@@ -69,8 +69,8 @@ export interface MarketItem {
   status: string
   publisherId: number
   publisherName: string
-  createdAt: string
-  updatedAt: string
+  createTime: string
+  updateTime: string
 }
 
 export interface PublishItemRequest {
@@ -96,10 +96,10 @@ export interface HelpTask {
   status: string
   publisherId: number
   publisherName: string
-  acceptorId?: number
-  acceptorName?: string
-  createdAt: string
-  updatedAt: string
+  accepterId?: number
+  accepterName?: string
+  createTime: string
+  updateTime: string
 }
 
 export interface PublishTaskRequest {
@@ -137,12 +137,12 @@ export interface Activity {
   endTime: string
   signupDeadline: string
   maxParticipants: number
-  participantCount: number
+  currentParticipants: number
   status: string
   publisherId: number
   publisherName: string
-  createdAt: string
-  updatedAt: string
+  createTime: string
+  updateTime: string
 }
 
 export interface Notification {
@@ -153,6 +153,6 @@ export interface Notification {
   type: string
   businessId?: number
   businessType?: string
-  read: boolean
-  createdAt: string
+  readStatus: number
+  createTime: string
 }

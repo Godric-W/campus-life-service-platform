@@ -22,6 +22,7 @@
           <el-input-number 
             v-model="form.price" 
             :min="0" 
+            :precision="2"
             :step="0.01" 
             placeholder="请输入价格"
           />
@@ -86,7 +87,18 @@ const rules = {
   ],
   price: [
     { required: true, message: '请输入商品价格', trigger: 'blur' },
-    { min: 0, message: '价格不能为负数', trigger: 'blur' }
+    { 
+      validator: (_rule: any, value: any, callback: any) => {
+        if (value === undefined || value === null || value === '') {
+          callback()
+        } else if (Number(value) < 0) {
+          callback(new Error('价格不能为负数'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
   ],
   description: [
     { required: true, message: '请输入商品描述', trigger: 'blur' }

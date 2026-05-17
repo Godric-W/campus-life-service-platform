@@ -16,8 +16,8 @@ import java.time.LocalDateTime;
 public class MarketItemListVO implements Serializable {
 
     private Long id;
-    private Long sellerId;
-    private String sellerName;
+    private Long publisherId;
+    private String publisherName;
     private String title;
     private BigDecimal price;
     private String category;

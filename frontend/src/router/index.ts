@@ -36,6 +36,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/Market/MarketDetailView.vue')
       },
       {
+        path: '/market/:id/edit',
+        name: 'MarketEdit',
+        component: () => import('@/views/Market/MarketPublishView.vue')
+      },
+      {
         path: '/market/publish',
         name: 'MarketPublish',
         component: () => import('@/views/Market/MarketPublishView.vue')
@@ -99,12 +104,12 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const userStore = useUserStore()
   const requiresAuth = to.meta.requiresAuth
+  const token = localStorage.getItem('token')
 
-  if (requiresAuth && !userStore.isLoggedIn) {
+  if (requiresAuth && !token) {
     next('/login')
-  } else if (!requiresAuth && userStore.isLoggedIn && to.path === '/login') {
+  } else if (!requiresAuth && token && to.path === '/login') {
     next('/')
   } else {
     next()

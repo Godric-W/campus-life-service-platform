@@ -17,6 +17,8 @@ public class ActivityListVO implements Serializable {
     private Long id;
     private Long clubId;
     private String clubName;
+    private Long publisherId;
+    private String publisherName;
     private String title;
     private String location;
     private String coverImage;

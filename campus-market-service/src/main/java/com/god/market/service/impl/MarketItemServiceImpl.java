@@ -76,8 +76,6 @@ public class MarketItemServiceImpl implements MarketItemService {
         }
         if (StrUtil.isNotBlank(queryDTO.getStatus())) {
             wrapper.eq(MarketItem::getStatus, queryDTO.getStatus());
-        } else {
-            wrapper.eq(MarketItem::getStatus, MarketItemStatusEnum.ON_SALE.getCode());
         }
         if (queryDTO.getSellerId() != null) {
             wrapper.eq(MarketItem::getSellerId, queryDTO.getSellerId());
@@ -211,11 +209,11 @@ public class MarketItemServiceImpl implements MarketItemService {
     }
 
     private MarketItemVO toVO(MarketItem item) {
-        String sellerName = getUserName(item.getSellerId());
+        String publisherName = getUserName(item.getSellerId());
         return MarketItemVO.builder()
                 .id(item.getId())
-                .sellerId(item.getSellerId())
-                .sellerName(sellerName)
+                .publisherId(item.getSellerId())
+                .publisherName(publisherName)
                 .title(item.getTitle())
                 .description(item.getDescription())
                 .price(item.getPrice())
@@ -230,11 +228,11 @@ public class MarketItemServiceImpl implements MarketItemService {
                 .build();
     }
 
-    private MarketItemListVO toListVO(MarketItem item, String sellerName) {
+    private MarketItemListVO toListVO(MarketItem item, String publisherName) {
         return MarketItemListVO.builder()
                 .id(item.getId())
-                .sellerId(item.getSellerId())
-                .sellerName(sellerName != null ? sellerName : "用户" + item.getSellerId())
+                .publisherId(item.getSellerId())
+                .publisherName(publisherName != null ? publisherName : "用户" + item.getSellerId())
                 .title(item.getTitle())
                 .price(item.getPrice())
                 .category(item.getCategory())

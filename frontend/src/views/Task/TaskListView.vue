@@ -28,7 +28,7 @@
 
     <div class="filter-bar">
       <el-radio-group v-model="status" @change="handleSearch">
-        <el-radio :value="'PENDING'">待接单</el-radio>
+        <el-radio :value="'PUBLISHED'">待接单</el-radio>
         <el-radio :value="'ACCEPTED'">进行中</el-radio>
         <el-radio :value="'COMPLETED'">已完成</el-radio>
         <el-radio :value="'CANCELLED'">已取消</el-radio>
@@ -114,23 +114,23 @@ function handlePageChange(page: number) {
   loadTasks()
 }
 
-function getStatusClass(status: string) {
-  switch (status) {
-    case 'PENDING': return 'status-pending'
-    case 'ACCEPTED': return 'status-accepted'
-    case 'COMPLETED': return 'status-completed'
-    case 'CANCELLED': return 'status-cancelled'
-    default: return ''
-  }
-}
-
 function getStatusText(status: string) {
   switch (status) {
-    case 'PENDING': return '待接单'
+    case 'PUBLISHED': return '待接单'
     case 'ACCEPTED': return '进行中'
     case 'COMPLETED': return '已完成'
     case 'CANCELLED': return '已取消'
     default: return status
+  }
+}
+
+function getStatusClass(status: string) {
+  switch (status) {
+    case 'PUBLISHED': return 'status-pending'
+    case 'ACCEPTED': return 'status-accepted'
+    case 'COMPLETED': return 'status-completed'
+    case 'CANCELLED': return 'status-cancelled'
+    default: return ''
   }
 }
 

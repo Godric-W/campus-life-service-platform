@@ -40,7 +40,7 @@
           </el-avatar>
           <div>
             <p class="name">{{ item.publisherName }}</p>
-            <p class="date">发布于 {{ formatDate(item.createdAt) }}</p>
+            <p class="date">发布于 {{ formatDate(item.createTime) }}</p>
           </div>
         </div>
         <div class="actions" v-if="canEdit">
@@ -48,14 +48,14 @@
             编辑商品
           </el-button>
           <el-button 
-            v-if="item.status === 'ON_SHELF'" 
+            v-if="item.status === 'ON_SALE'" 
             type="warning" 
             @click="handleOffShelf"
           >
             下架商品
           </el-button>
           <el-button 
-            v-if="item.status === 'ON_SHELF'" 
+            v-if="item.status === 'ON_SALE'" 
             type="success" 
             @click="handleMarkSold"
           >
@@ -87,12 +87,13 @@ const imageList = computed(() => {
 })
 
 const canEdit = computed(() => {
-  return item.value && userStore.userInfo?.userId === item.value.publisherId
+  if (!item.value || !userStore.userInfo?.userId) return false
+  return Number(userStore.userInfo.userId) === Number(item.value.publisherId)
 })
 
 function getStatusClass(status: string) {
   switch (status) {
-    case 'ON_SHELF': return 'status-on'
+    case 'ON_SALE': return 'status-on'
     case 'OFF_SHELF': return 'status-off'
     case 'SOLD': return 'status-sold'
     default: return ''
@@ -101,7 +102,7 @@ function getStatusClass(status: string) {
 
 function getStatusText(status: string) {
   switch (status) {
-    case 'ON_SHELF': return '上架中'
+    case 'ON_SALE': return '上架中'
     case 'OFF_SHELF': return '已下架'
     case 'SOLD': return '已售出'
     default: return status

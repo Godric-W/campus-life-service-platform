@@ -42,7 +42,7 @@
               <User />
             </span>
             <span class="label">报名人数</span>
-            <span class="value">{{ activity.participantCount }}/{{ activity.maxParticipants }} 人</span>
+            <span class="value">{{ activity.currentParticipants }}/{{ activity.maxParticipants }} 人</span>
           </div>
         </div>
 
@@ -59,7 +59,7 @@
             </el-avatar>
             <div>
               <p class="name">{{ activity.publisherName }}</p>
-              <p class="date">发布于 {{ formatDate(activity.createdAt) }}</p>
+              <p class="date">发布于 {{ formatDate(activity.createTime) }}</p>
             </div>
           </div>
         </div>
@@ -115,19 +115,18 @@ const hasRegistered = ref(false)
 
 const canRegister = computed(() => {
   if (!activity.value) return false
-  return activity.value.status === 'PENDING' && !hasRegistered.value && activity.value.participantCount < activity.value.maxParticipants
+  return activity.value.status === 'PUBLISHED' && !hasRegistered.value && activity.value.currentParticipants < activity.value.maxParticipants
 })
 
 const canCancelActivity = computed(() => {
-  if (!activity.value || !userStore.userInfo) return false
-  return activity.value.status === 'PENDING' && activity.value.publisherId === userStore.userInfo.userId
+  if (!activity.value || !userStore.userInfo?.userId) return false
+  return activity.value.status === 'PUBLISHED' && Number(activity.value.publisherId) === Number(userStore.userInfo.userId)
 })
 
 function getStatusClass(status: string) {
   switch (status) {
-    case 'PENDING': return 'status-pending'
-    case 'ONGOING': return 'status-ongoing'
-    case 'ENDED': return 'status-ended'
+    case 'PUBLISHED': return 'status-pending'
+    case 'FINISHED': return 'status-ended'
     case 'CANCELLED': return 'status-cancelled'
     default: return ''
   }
@@ -135,9 +134,8 @@ function getStatusClass(status: string) {
 
 function getStatusText(status: string) {
   switch (status) {
-    case 'PENDING': return '未开始'
-    case 'ONGOING': return '进行中'
-    case 'ENDED': return '已结束'
+    case 'PUBLISHED': return '未开始'
+    case 'FINISHED': return '已结束'
     case 'CANCELLED': return '已取消'
     default: return status
   }
@@ -183,7 +181,7 @@ async function handleRegister() {
     await activityApi.registerActivity(activity.value.id)
     ElMessage.success('报名成功')
     hasRegistered.value = true
-    activity.value.participantCount++
+    activity.value.currentParticipants++
   } catch {
     ElMessage.error('报名失败')
   } finally {
@@ -198,7 +196,7 @@ async function handleCancelRegistration() {
     await activityApi.cancelRegistration(activity.value.id)
     ElMessage.success('已取消报名')
     hasRegistered.value = false
-    activity.value.participantCount--
+    activity.value.currentParticipants--
   } catch {
     ElMessage.error('操作失败')
   } finally {

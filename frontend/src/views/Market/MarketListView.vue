@@ -30,7 +30,7 @@
 
     <div class="filter-bar">
       <el-radio-group v-model="status" @change="handleSearch">
-        <el-radio :value="'ON_SHELF'">上架中</el-radio>
+        <el-radio :value="'ON_SALE'">上架中</el-radio>
         <el-radio :value="'OFF_SHELF'">已下架</el-radio>
         <el-radio :value="'SOLD'">已售出</el-radio>
         <el-radio :value="'ALL'">全部</el-radio>

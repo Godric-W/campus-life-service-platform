@@ -23,14 +23,14 @@ export const useNotificationStore = defineStore('notification', () => {
     await notificationApi.markAsRead(id)
     const notification = notifications.value.find(n => n.id === id)
     if (notification) {
-      notification.read = true
+      notification.readStatus = 1
       unreadCount.value = Math.max(0, unreadCount.value - 1)
     }
   }
 
   async function markAllAsRead() {
     await notificationApi.markAllAsRead()
-    notifications.value.forEach(n => n.read = true)
+    notifications.value.forEach(n => n.readStatus = 1)
     unreadCount.value = 0
   }
 

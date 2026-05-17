@@ -89,8 +89,6 @@ public class ActivityServiceImpl implements ActivityService {
         }
         if (StrUtil.isNotBlank(queryDTO.getStatus())) {
             wrapper.eq(Activity::getStatus, queryDTO.getStatus());
-        } else {
-            wrapper.eq(Activity::getStatus, ActivityStatusEnum.PUBLISHED.getCode());
         }
         if (queryDTO.getPublisherId() != null) {
             wrapper.eq(Activity::getPublisherId, queryDTO.getPublisherId());
@@ -282,11 +280,14 @@ public class ActivityServiceImpl implements ActivityService {
 
     private ActivityListVO toListVO(Activity activity) {
         String clubName = activity.getClubId() != null ? getClubName(activity.getClubId()) : null;
+        String publisherName = getUserName(activity.getPublisherId());
         
         return ActivityListVO.builder()
                 .id(activity.getId())
                 .clubId(activity.getClubId())
                 .clubName(clubName)
+                .publisherId(activity.getPublisherId())
+                .publisherName(publisherName)
                 .title(activity.getTitle())
                 .location(activity.getLocation())
                 .coverImage(activity.getCoverImage())

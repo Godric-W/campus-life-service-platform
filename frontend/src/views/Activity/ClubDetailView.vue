@@ -154,14 +154,14 @@ const publishRules = {
 }
 
 const canManage = computed(() => {
-  return club.value && userStore.userInfo?.userId === club.value.adminId
+  if (!club.value || !userStore.userInfo?.userId) return false
+  return Number(userStore.userInfo.userId) === Number(club.value.adminId)
 })
 
 function getActivityStatusClass(status: string) {
   switch (status) {
-    case 'PENDING': return 'status-pending'
-    case 'ONGOING': return 'status-ongoing'
-    case 'ENDED': return 'status-ended'
+    case 'PUBLISHED': return 'status-pending'
+    case 'FINISHED': return 'status-ended'
     case 'CANCELLED': return 'status-cancelled'
     default: return ''
   }
@@ -169,9 +169,8 @@ function getActivityStatusClass(status: string) {
 
 function getActivityStatusText(status: string) {
   switch (status) {
-    case 'PENDING': return '未开始'
-    case 'ONGOING': return '进行中'
-    case 'ENDED': return '已结束'
+    case 'PUBLISHED': return '未开始'
+    case 'FINISHED': return '已结束'
     case 'CANCELLED': return '已取消'
     default: return status
   }

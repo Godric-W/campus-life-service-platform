@@ -20,6 +20,7 @@
           <el-input-number 
             v-model="form.reward" 
             :min="0" 
+            :precision="2"
             :step="0.01" 
             placeholder="请输入报酬金额"
           />
@@ -90,7 +91,18 @@ const rules = {
   ],
   reward: [
     { required: true, message: '请输入报酬金额', trigger: 'blur' },
-    { min: 0, message: '金额不能为负数', trigger: 'blur' }
+    {
+      validator: (_rule: any, value: any, callback: any) => {
+        if (value === undefined || value === null || value === '') {
+          callback()
+        } else if (Number(value) < 0) {
+          callback(new Error('金额不能为负数'))
+        } else {
+          callback()
+        }
+      },
+      trigger: 'blur'
+    }
   ],
   pickupAddress: [
     { required: true, message: '请输入取货地点', trigger: 'blur' }

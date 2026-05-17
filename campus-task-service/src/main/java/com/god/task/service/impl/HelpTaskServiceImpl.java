@@ -75,8 +75,6 @@ public class HelpTaskServiceImpl implements HelpTaskService {
         }
         if (StrUtil.isNotBlank(queryDTO.getStatus())) {
             wrapper.eq(HelpTask::getStatus, queryDTO.getStatus());
-        } else {
-            wrapper.eq(HelpTask::getStatus, TaskStatusEnum.PUBLISHED.getCode());
         }
         if (queryDTO.getPublisherId() != null) {
             wrapper.eq(HelpTask::getPublisherId, queryDTO.getPublisherId());

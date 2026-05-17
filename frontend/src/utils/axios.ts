@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { useUserStore } from '@/stores/user'
 
 const axiosInstance = axios.create({
   baseURL: (import.meta as any).env.VITE_API_BASE_URL || '/api',
@@ -9,11 +8,13 @@ const axiosInstance = axios.create({
   }
 })
 
+let isRedirecting = false
+
 axiosInstance.interceptors.request.use(
   (config) => {
-    const userStore = useUserStore()
-    if (userStore.token) {
-      config.headers.Authorization = `Bearer ${userStore.token}`
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
     }
     return config
   },
@@ -27,9 +28,9 @@ axiosInstance.interceptors.response.use(
     return response
   },
   (error) => {
-    if (error.response?.status === 401) {
-      const userStore = useUserStore()
-      userStore.logout()
+    if (error.response?.status === 401 && !isRedirecting) {
+      isRedirecting = true
+      localStorage.removeItem('token')
       window.location.href = '/login'
     }
     return Promise.reject(error)
