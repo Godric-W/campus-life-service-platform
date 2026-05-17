@@ -194,6 +194,19 @@ public class MarketItemServiceImpl implements MarketItemService {
         return getItemList(queryDTO);
     }
 
+    @Override
+    public void OnShelf(Long id) {
+        Long userId = UserContext.getUserId();
+        if (userId == null) {
+            throw new BusinessException(ResultCode.UNAUTHORIZED);
+        }
+        MarketItem item = getExistingItem(id);
+        checkOwnership(item, userId);
+        item.setStatus(MarketItemStatusEnum.ON_SALE.getCode());
+        item.setUpdateTime(LocalDateTime.now());
+        marketItemMapper.updateById(item);
+    }
+
     private MarketItem getExistingItem(Long id) {
         MarketItem item = marketItemMapper.selectById(id);
         if (item == null) {

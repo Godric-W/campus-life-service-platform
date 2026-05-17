@@ -64,6 +64,13 @@ public class MarketItemController {
         marketItemService.offShelf(id);
         return Result.success();
     }
+    @Operation(summary = "上架商品", description = "将商品上架，仅发布者可操作")
+    @PutMapping("/{id}/on-shelf")
+    public Result<Void> OnShelf(
+            @Parameter(description = "商品ID") @PathVariable("id") Long id) {
+        marketItemService.OnShelf(id);
+        return Result.success();
+    }
 
     @Operation(summary = "标记已售出", description = "将商品标记为已售出，仅发布者可操作")
     @PutMapping("/{id}/sold")

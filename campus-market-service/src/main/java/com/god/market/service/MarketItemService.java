@@ -22,4 +22,6 @@ public interface MarketItemService {
     void markAsSold(Long id);
 
     PageResult<MarketItemListVO> getMyItems(MarketItemQueryDTO queryDTO);
+
+    void OnShelf(Long id);
 }
