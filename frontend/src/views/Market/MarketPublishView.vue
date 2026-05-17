@@ -119,11 +119,12 @@ async function handleSubmit() {
       const id = Number(route.params.id)
       await marketApi.updateMarketItem(id, form)
       ElMessage.success('修改成功')
+      router.push(`/market/${id}`)
     } else {
       await marketApi.createMarketItem(form)
       ElMessage.success('发布成功')
+      router.push('/market')
     }
-    router.push('/market')
   } catch (error) {
     ElMessage.error(isEdit.value ? '修改失败' : '发布失败')
   } finally {

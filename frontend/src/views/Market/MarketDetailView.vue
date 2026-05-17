@@ -75,7 +75,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import { marketApi } from '@/api'
@@ -150,6 +150,10 @@ async function handleOnShelf() {
 }
 
 onMounted(loadItem)
+
+watch(() => route.params.id, () => {
+  loadItem()
+})
 </script>
 
 <style scoped>
