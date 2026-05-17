@@ -1,28 +1,15 @@
 <template>
-  <div class="activity-container">
-    <div class="search-bar">
-      <el-input 
-        v-model="keyword" 
-        placeholder="搜索活动" 
-        class="search-input"
-        clearable
-        @keyup.enter="handleSearch"
-        @clear="handleSearch"
-      >
-        <template #append>
-          <el-button @click="handleSearch">
-            <Search />
-          </el-button>
-        </template>
-      </el-input>
-      <el-radio-group v-model="status" @change="handleSearch">
-        <el-radio :value="'ALL'">全部</el-radio>
-        <el-radio :value="'PUBLISHED'">未开始</el-radio>
-        <el-radio :value="'FINISHED'">已结束</el-radio>
-      </el-radio-group>
+  <div class="my-activity-container">
+    <div class="page-header">
+      <h2>我的活动</h2>
     </div>
 
-    <div class="activity-grid">
+    <el-tabs v-model="activeTab" @tab-change="handleTabChange">
+      <el-tab-pane label="我报名的" name="registered" />
+      <el-tab-pane label="我发布的" name="published" />
+    </el-tabs>
+
+    <div class="activity-grid" v-if="activities.length > 0">
       <div class="activity-card" v-for="activity in activities" :key="activity.id" @click="$router.push(`/activities/${activity.id}`)">
         <div class="activity-image">
           <img :src="activity.coverImage || '/images/default-activity.png'" alt="活动封面" />
@@ -51,7 +38,12 @@
       </div>
     </div>
 
-    <div v-if="total > 0" class="pagination-wrapper">
+    <div v-else-if="!loading" class="empty-state">
+      <p>{{ activeTab === 'registered' ? '暂未报名任何活动' : '暂未发布任何活动' }}</p>
+      <el-button v-if="activeTab === 'published'" type="primary" @click="$router.push('/activities')">去发布</el-button>
+    </div>
+
+    <div v-if="total > pageSize" class="pagination-wrapper">
       <el-pagination
         :total="total"
         :page-size="pageSize"
@@ -65,31 +57,32 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onActivated } from 'vue'
-import { Search, Location, Clock } from '@element-plus/icons-vue'
+import { Location, Clock } from '@element-plus/icons-vue'
 import { activityApi } from '@/api'
 import type { Activity } from '@/types'
 
-const keyword = ref('')
-const status = ref('ALL')
+const activeTab = ref('registered')
 const pageNum = ref(1)
 const pageSize = ref(12)
 const total = ref(0)
 const activities = ref<Activity[]>([])
+const loading = ref(false)
 
 async function loadActivities() {
-  const params: Record<string, unknown> = {
-    pageNum: pageNum.value,
-    pageSize: pageSize.value
+  loading.value = true
+  try {
+    const params = { pageNum: pageNum.value, pageSize: pageSize.value }
+    const response = activeTab.value === 'registered'
+      ? await activityApi.getMyRegisteredActivities(params)
+      : await activityApi.getMyPublishedActivities(params)
+    activities.value = response.data.records
+    total.value = response.data.total
+  } finally {
+    loading.value = false
   }
-  if (keyword.value) params.keyword = keyword.value
-  if (status.value !== 'ALL') params.status = status.value
-
-  const response = await activityApi.getActivities(params)
-  activities.value = response.data.records
-  total.value = response.data.total
 }
 
-function handleSearch() {
+function handleTabChange() {
   pageNum.value = 1
   loadActivities()
 }
@@ -99,21 +92,23 @@ function handlePageChange(page: number) {
   loadActivities()
 }
 
-function getStatusClass(status: string) {
-  switch (status) {
-    case 'PUBLISHED': return 'status-pending'
-    case 'FINISHED': return 'status-ended'
-    case 'CANCELLED': return 'status-cancelled'
-    default: return ''
-  }
-}
-
 function getStatusText(status: string) {
   switch (status) {
     case 'PUBLISHED': return '未开始'
+    case 'ACTIVE': return '进行中'
     case 'FINISHED': return '已结束'
     case 'CANCELLED': return '已取消'
     default: return status
+  }
+}
+
+function getStatusClass(status: string) {
+  switch (status) {
+    case 'PUBLISHED': return 'status-pending'
+    case 'ACTIVE': return 'status-active'
+    case 'FINISHED': return 'status-finished'
+    case 'CANCELLED': return 'status-cancelled'
+    default: return ''
   }
 }
 
@@ -128,24 +123,22 @@ onActivated(loadActivities)
 </script>
 
 <style scoped>
-.activity-container {
+.my-activity-container {
   padding: 20px 0;
 }
 
-.search-bar {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 20px;
+.page-header {
+  margin-bottom: 24px;
 }
 
-.search-input {
-  flex: 1;
-  max-width: 400px;
+.page-header h2 {
+  margin: 0;
+  font-size: 22px;
 }
 
 .activity-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 20px;
 }
 
@@ -166,8 +159,8 @@ onActivated(loadActivities)
 .activity-image {
   position: relative;
   width: 100%;
-  padding-top: 56.25%;
-  background: #f5f7fa;
+  padding-top: 56%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
 }
 
 .activity-image img {
@@ -182,26 +175,26 @@ onActivated(loadActivities)
 .status-badge {
   position: absolute;
   top: 8px;
-  left: 8px;
-  padding: 4px 12px;
+  right: 8px;
+  padding: 3px 10px;
   border-radius: 4px;
   font-size: 12px;
   color: #fff;
 }
 
-.status-pending {
-  background: #67c23a;
-}
-
-.status-ongoing {
+.status-badge.status-pending {
   background: #409eff;
 }
 
-.status-ended {
+.status-badge.status-active {
+  background: #67c23a;
+}
+
+.status-badge.status-finished {
   background: #909399;
 }
 
-.status-cancelled {
+.status-badge.status-cancelled {
   background: #f56c6c;
 }
 
@@ -212,42 +205,57 @@ onActivated(loadActivities)
 .activity-info h3 {
   margin: 0 0 8px 0;
   font-size: 16px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.activity-info .club-name {
+.club-name {
   margin: 0 0 12px 0;
-  font-size: 12px;
-  color: #909399;
+  font-size: 13px;
+  color: #667eea;
 }
 
 .activity-meta {
   display: flex;
+  flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 12px;
+  font-size: 13px;
+  color: #606266;
 }
 
 .activity-meta span {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
-  color: #606266;
 }
 
 .activity-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-size: 12px;
 }
 
-.activity-footer .participants {
-  font-size: 12px;
-  color: #67c23a;
+.participants {
+  color: #f56c6c;
 }
 
-.activity-footer .publisher {
-  font-size: 12px;
+.publisher {
+  color: #c0c4cc;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 0;
   color: #909399;
+}
+
+.empty-state p {
+  margin-bottom: 16px;
+  font-size: 16px;
 }
 
 .pagination-wrapper {
@@ -257,14 +265,8 @@ onActivated(loadActivities)
 }
 
 @media (max-width: 768px) {
-  .search-bar {
-    flex-direction: column;
-  }
-  .search-input {
-    max-width: none;
-  }
   .activity-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 </style>

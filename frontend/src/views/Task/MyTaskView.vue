@@ -1,49 +1,15 @@
 <template>
-  <div class="task-container">
-    <div class="search-bar">
-      <el-input 
-        v-model="keyword" 
-        placeholder="搜索任务" 
-        class="search-input"
-        clearable
-        @keyup.enter="handleSearch"
-        @clear="handleSearch"
-      >
-        <template #append>
-          <el-button @click="handleSearch">
-            <Search />
-          </el-button>
-        </template>
-      </el-input>
-      <el-select 
-        v-model="taskType" 
-        placeholder="任务类型"
-        clearable
-        @change="handleSearch"
-      >
-        <el-option label="全部" value="" />
-        <el-option label="取快递" value="取快递" />
-        <el-option label="代买" value="代买" />
-        <el-option label="代送" value="代送" />
-        <el-option label="其他" value="其他" />
-      </el-select>
-      <el-button type="primary" @click="$router.push('/tasks/publish')">
-        <Plus />
-        发布任务
-      </el-button>
+  <div class="my-task-container">
+    <div class="page-header">
+      <h2>我的任务</h2>
     </div>
 
-    <div class="filter-bar">
-      <el-radio-group v-model="status" @change="handleSearch">
-        <el-radio :value="'PUBLISHED'">待接单</el-radio>
-        <el-radio :value="'ACCEPTED'">进行中</el-radio>
-        <el-radio :value="'COMPLETED'">已完成</el-radio>
-        <el-radio :value="'CANCELLED'">已取消</el-radio>
-        <el-radio :value="'ALL'">全部</el-radio>
-      </el-radio-group>
-    </div>
+    <el-tabs v-model="activeTab" @tab-change="handleTabChange">
+      <el-tab-pane label="我发布的" name="published" />
+      <el-tab-pane label="我接单的" name="accepted" />
+    </el-tabs>
 
-    <div class="task-list">
+    <div class="task-list" v-if="tasks.length > 0">
       <div class="task-card" v-for="task in tasks" :key="task.id" @click="$router.push(`/tasks/${task.id}`)">
         <div class="task-icon-wrapper">
           <div class="task-icon">
@@ -62,7 +28,11 @@
             <span class="deadline">截止: {{ formatDeadline(task.deadline) }}</span>
           </div>
           <div class="task-footer">
-            <span class="publisher">{{ task.publisherName }}</span>
+            <span class="publisher" v-if="activeTab === 'published'">
+              <template v-if="task.accepterName">接单者: {{ task.accepterName }}</template>
+              <template v-else>暂无人接单</template>
+            </span>
+            <span class="publisher" v-else>发布者: {{ task.publisherName }}</span>
             <span class="status" :class="getStatusClass(task.status)">
               {{ getStatusText(task.status) }}
             </span>
@@ -71,7 +41,12 @@
       </div>
     </div>
 
-    <div v-if="total > 0" class="pagination-wrapper">
+    <div v-else-if="!loading" class="empty-state">
+      <p>{{ activeTab === 'published' ? '暂未发布任何任务' : '暂未接单任何任务' }}</p>
+      <el-button v-if="activeTab === 'published'" type="primary" @click="$router.push('/tasks/publish')">去发布</el-button>
+    </div>
+
+    <div v-if="total > pageSize" class="pagination-wrapper">
       <el-pagination
         :total="total"
         :page-size="pageSize"
@@ -84,34 +59,33 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { Search, Plus, Tickets } from '@element-plus/icons-vue'
+import { ref, onMounted, onActivated } from 'vue'
+import { Tickets } from '@element-plus/icons-vue'
 import { taskApi } from '@/api'
 import type { HelpTask } from '@/types'
 
-const keyword = ref('')
-const taskType = ref('')
-const status = ref('ALL')
+const activeTab = ref('published')
 const pageNum = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
 const tasks = ref<HelpTask[]>([])
+const loading = ref(false)
 
 async function loadTasks() {
-  const params: Record<string, unknown> = {
-    pageNum: pageNum.value,
-    pageSize: pageSize.value
+  loading.value = true
+  try {
+    const params = { pageNum: pageNum.value, pageSize: pageSize.value }
+    const response = activeTab.value === 'published'
+      ? await taskApi.getMyPublishedTasks(params)
+      : await taskApi.getMyAcceptedTasks(params)
+    tasks.value = response.data.records
+    total.value = response.data.total
+  } finally {
+    loading.value = false
   }
-  if (keyword.value) params.keyword = keyword.value
-  if (taskType.value) params.taskType = taskType.value
-  if (status.value !== 'ALL') params.status = status.value
-
-  const response = await taskApi.getTasks(params)
-  tasks.value = response.data.records
-  total.value = response.data.total
 }
 
-function handleSearch() {
+function handleTabChange() {
   pageNum.value = 1
   loadTasks()
 }
@@ -148,26 +122,21 @@ function formatDeadline(dateStr: string) {
 }
 
 onMounted(loadTasks)
+onActivated(loadTasks)
 </script>
 
 <style scoped>
-.task-container {
+.my-task-container {
   padding: 20px 0;
 }
 
-.search-bar {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 20px;
+.page-header {
+  margin-bottom: 24px;
 }
 
-.search-input {
-  flex: 1;
-  max-width: 400px;
-}
-
-.filter-bar {
-  margin-bottom: 20px;
+.page-header h2 {
+  margin: 0;
+  font-size: 22px;
 }
 
 .task-list {
@@ -199,8 +168,8 @@ onMounted(loadTasks)
 .task-icon {
   width: 56px;
   height: 56px;
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  border-radius: 14px;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -223,18 +192,21 @@ onMounted(loadTasks)
 .task-header h3 {
   margin: 0;
   font-size: 18px;
+  font-weight: 500;
 }
 
-.task-header .reward {
+.reward {
   font-size: 20px;
   font-weight: 600;
-  color: #67c23a;
+  color: #f56c6c;
+  flex-shrink: 0;
+  margin-left: 16px;
 }
 
 .task-desc {
   margin: 0 0 12px 0;
   font-size: 14px;
-  color: #606266;
+  color: #909399;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -242,22 +214,16 @@ onMounted(loadTasks)
 
 .task-info {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+  gap: 20px;
   margin-bottom: 12px;
-}
-
-.task-type, .location, .deadline {
-  font-size: 12px;
-  padding: 4px 10px;
-  background: #f5f7fa;
-  border-radius: 4px;
+  font-size: 13px;
   color: #606266;
 }
 
-.deadline {
-  background: #fff3e0;
-  color: #e6a23c;
+.task-type {
+  padding: 2px 10px;
+  background: #f5f7fa;
+  border-radius: 4px;
 }
 
 .task-footer {
@@ -267,48 +233,50 @@ onMounted(loadTasks)
 }
 
 .publisher {
-  font-size: 12px;
+  font-size: 13px;
   color: #909399;
 }
 
 .status {
-  font-size: 12px;
-  padding: 4px 12px;
+  padding: 2px 10px;
   border-radius: 4px;
+  font-size: 12px;
 }
 
 .status-pending {
-  background: #e8f5e9;
-  color: #67c23a;
+  background: #fef0f0;
+  color: #f56c6c;
 }
 
 .status-accepted {
-  background: #e3f2fd;
+  background: #e8f4ff;
   color: #409eff;
 }
 
 .status-completed {
-  background: #f5f7fa;
-  color: #909399;
+  background: #e8f5e9;
+  color: #67c23a;
 }
 
 .status-cancelled {
-  background: #fef0f0;
-  color: #f56c6c;
+  background: #fafafa;
+  color: #909399;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 80px 0;
+  color: #909399;
+}
+
+.empty-state p {
+  margin-bottom: 16px;
+  font-size: 16px;
 }
 
 .pagination-wrapper {
   display: flex;
   justify-content: center;
   margin-top: 30px;
-}
-
-@media (max-width: 768px) {
-  .search-bar {
-    flex-direction: column;
-  }
-  .search-input {
-    max-width: none;
-  }
 }
 </style>

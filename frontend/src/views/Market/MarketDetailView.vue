@@ -61,6 +61,13 @@
           >
             标记已售出
           </el-button>
+          <el-button 
+            v-if="item.status === 'OFF_SHELF'" 
+            type="primary" 
+            @click="handleOnShelf"
+          >
+            重新上架
+          </el-button>
         </div>
       </div>
     </div>
@@ -133,6 +140,13 @@ async function handleMarkSold() {
   await marketApi.markAsSold(item.value.id)
   ElMessage.success('商品已标记为已售出')
   item.value.status = 'SOLD'
+}
+
+async function handleOnShelf() {
+  if (!item.value) return
+  await marketApi.onShelfItem(item.value.id)
+  ElMessage.success('商品已重新上架')
+  item.value.status = 'ON_SALE'
 }
 
 onMounted(loadItem)

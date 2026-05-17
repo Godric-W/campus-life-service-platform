@@ -46,6 +46,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/Market/MarketPublishView.vue')
       },
       {
+        path: '/market/my',
+        name: 'MyMarket',
+        component: () => import('@/views/Market/MyMarketView.vue')
+      },
+      {
         path: '/tasks',
         name: 'Task',
         component: () => import('@/views/Task/TaskListView.vue')
@@ -61,6 +66,11 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/Task/TaskPublishView.vue')
       },
       {
+        path: '/tasks/my',
+        name: 'MyTask',
+        component: () => import('@/views/Task/MyTaskView.vue')
+      },
+      {
         path: '/clubs',
         name: 'Club',
         component: () => import('@/views/Activity/ClubListView.vue')
@@ -74,6 +84,11 @@ const routes: RouteRecordRaw[] = [
         path: '/activities',
         name: 'Activity',
         component: () => import('@/views/Activity/ActivityListView.vue')
+      },
+      {
+        path: '/activities/my',
+        name: 'MyActivity',
+        component: () => import('@/views/Activity/MyActivityView.vue')
       },
       {
         path: '/activities/:id',

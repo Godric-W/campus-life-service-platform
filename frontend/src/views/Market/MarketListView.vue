@@ -5,7 +5,9 @@
         v-model="keyword" 
         placeholder="搜索商品" 
         class="search-input"
+        clearable
         @keyup.enter="handleSearch"
+        @clear="handleSearch"
       >
         <template #append>
           <el-button @click="handleSearch">
@@ -13,7 +15,12 @@
           </el-button>
         </template>
       </el-input>
-      <el-select v-model="category" placeholder="选择分类">
+      <el-select 
+        v-model="category" 
+        placeholder="选择分类"
+        clearable
+        @change="handleCategoryChange"
+      >
         <el-option label="全部" value="" />
         <el-option label="数码产品" value="数码产品" />
         <el-option label="书籍教材" value="书籍教材" />
@@ -21,7 +28,17 @@
         <el-option label="交通工具" value="交通工具" />
         <el-option label="体育用品" value="体育用品" />
         <el-option label="其他" value="其他" />
+        <el-option label="自定义..." value="__CUSTOM__" />
       </el-select>
+      <el-input
+        v-if="category === '__CUSTOM__'"
+        v-model="customKeyword"
+        placeholder="输入商品关键字"
+        class="custom-category-input"
+        clearable
+        @keyup.enter="handleSearch"
+        @clear="handleSearch"
+      />
       <el-button type="primary" @click="$router.push('/market/publish')">
         <Plus />
         发布商品
@@ -73,6 +90,7 @@ import type { MarketItem } from '@/types'
 
 const keyword = ref('')
 const category = ref('')
+const customKeyword = ref('')
 const status = ref('ALL')
 const pageNum = ref(1)
 const pageSize = ref(12)
@@ -84,13 +102,24 @@ async function loadItems() {
     pageNum: pageNum.value,
     pageSize: pageSize.value
   }
-  if (keyword.value) params.keyword = keyword.value
-  if (category.value) params.category = category.value
+  if (category.value === '__CUSTOM__') {
+    if (customKeyword.value) params.keyword = customKeyword.value
+  } else {
+    if (keyword.value) params.keyword = keyword.value
+    if (category.value) params.category = category.value
+  }
   if (status.value !== 'ALL') params.status = status.value
 
   const response = await marketApi.getMarketItems(params)
   items.value = response.data.records
   total.value = response.data.total
+}
+
+function handleCategoryChange() {
+  if (category.value !== '__CUSTOM__') {
+    customKeyword.value = ''
+  }
+  handleSearch()
 }
 
 function handleSearch() {
@@ -120,6 +149,10 @@ onMounted(loadItems)
 .search-input {
   flex: 1;
   max-width: 400px;
+}
+
+.custom-category-input {
+  width: 200px;
 }
 
 .filter-bar {

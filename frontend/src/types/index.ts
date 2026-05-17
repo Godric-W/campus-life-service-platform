@@ -69,6 +69,7 @@ export interface MarketItem {
   status: string
   publisherId: number
   publisherName: string
+  viewCount: number
   createTime: string
   updateTime: string
 }

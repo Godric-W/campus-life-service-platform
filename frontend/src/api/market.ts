@@ -33,6 +33,11 @@ export const marketApi = {
     return response.data
   },
 
+  async onShelfItem(id: number): Promise<ApiResponse<void>> {
+    const response = await axios.put(`/market/items/${id}/on-shelf`)
+    return response.data
+  },
+
   async markAsSold(id: number): Promise<ApiResponse<void>> {
     const response = await axios.put(`/market/items/${id}/sold`)
     return response.data
